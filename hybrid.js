@@ -52,7 +52,7 @@ async function hybridSearch(uri, apiKey) {
     // create a vector index
     await table.createIndex("vector", {
         config: lancedb.Index.ivfPq({
-          distanceType: 'cosine'
+        distanceType: 'cosine'
         })
     });    
 
@@ -60,23 +60,24 @@ async function hybridSearch(uri, apiKey) {
         config: Index.fts(),
     });
 
-    while ((await table.listIndices()).length < 2) {
-        console.log("Indexing...")
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    //while ((await table.listIndices()).length < 1) {
+    //    console.log("Indexing...")
+    //    await new Promise(resolve => setTimeout(resolve, 1000));
+    //}
+    //console.log("Indexing done!")
 
     // Query the table
     let query = (await embed_fun.embed(['a sweet fruit to eat']))[0]
     const result = await table
         .query()
-        .nearestTo([0.1, 0.1])
-        .fullTextSearch("dog")
+        .nearestTo(query)
+        .fullTextSearch("Banana")
         .where("`type`='fruit'")
         .rerank(await lancedb.rerankers.RRFReranker.create())
         .select(["text"])
         .limit(1)
         .toArray();     
-    console.log(results)
+    console.log(result)
 }
 
 const API_KEY = process.env.LANCEDB_API_KEY
